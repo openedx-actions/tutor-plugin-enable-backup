@@ -1,0 +1,44 @@
+#------------------------------------------------------------------------------
+# usage: Use tutor to enable the hastexo Backup & Restore plugin
+#------------------------------------------------------------------------------
+name: enable Backup plugin for tutor
+description: Github Action to install and enable the Tutor plugin hastexo/tutor-contrib-backup
+branding:
+  icon: 'cloud'
+  color: 'orange'
+inputs:
+  aws-ecr-uri:
+    description: 'The URI for the AWS ECR repository. Example: 621672204142.dkr.ecr.us-east-2.amazonaws.com/openedx_backup:latest'
+    required: true
+    type: string
+  namespace:
+    description: 'The Kubernetes namesapce to which the Open edX platform environment will be deployed. Example: openedx-prod'
+    required: true
+    type: string
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3.0.2
+
+    - name: fetch S3 secrets from Kubernetes secrets
+      run: |-
+        kubectl get secret s3-openedx-storage -n ${{ inputs.namespace }}  -o json | jq  '.data | map_values(@base64d)' | jq -r 'keys[] as $k | "TUTOR_\($k|ascii_upcase)=\(.[$k])"' >> $GITHUB_ENV
+      shell: bash
+
+    # IMPORTANT: you must run tutor_build_hastexo_backup first.
+    #
+    # See the github README for additional AWS S3 configuration
+    # options in the event that you are not also installing
+    # hastexo/tutor-contrib-s3 (included above)
+    - name: Enable the hastexo Backup & Restore plugin
+      run: |-
+        pip install git+https://github.com/hastexo/tutor-contrib-backup@v0.0.6
+        tutor plugins enable backup
+
+        tutor config save --set BACKUP_DOCKER_IMAGE=${{ inputs.aws-ecr-uri }} \
+                          --set BACKUP_K8S_CRONJOB_HISTORYLIMIT_FAILURE=1 \
+                          --set BACKUP_K8S_CRONJOB_HISTORYLIMIT_SUCCESS=3 \
+                          --set BACKUP_K8S_CRONJOB_BACKUP_SCHEDULE="0 0 * * *" \
+                          --set BACKUP_S3_BUCKET_NAME="${S3_BACKUP_BUCKET}"
+      shell: bash
