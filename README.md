@@ -55,7 +55,7 @@ jobs:
 
     # This action.
     - name: Enable tutor plugin - Backup
-      uses: openedx-actions/tutor-enable-plugin-backup
+      uses: openedx-actions/tutor-enable-plugin-backup@v0.0.1
       if: ${{ env.ENABLE_BACKUP == 'true' }}
       with:
         aws-ecr-uri: 123456789012.dkr.ecr.us-east-2.amazonaws.com/openedx_backup:latest
