@@ -57,4 +57,4 @@ runs:
     - name: Merge updated config.yml with backup
       shell: bash
       run: |-
-        yq eval-all '. as $item ireduce ({}; . *+ $item )' config*.yml > $(tutor config printroot)/config.yml
+        yq eval-all '. as $item ireduce ({}; . *+ $item )' $(tutor config printroot)/config*.yml > $(tutor config printroot)/config.yml
