@@ -40,6 +40,12 @@ jobs:
       - name: Configure Github workflow environment
         uses: openedx-actions/tutor-k8s-init@v0.0.1
 
+      # Build the Backup container
+      - name: Build the image and upload to AWS ECR
+        uses: openedx-actions/tutor-plugin-build-backup@v0.1.2
+        with:
+          aws-ecr-repo: openedx_backup
+
       # This action.
       - name: Enable tutor plugin - Backup
         uses: openedx-actions/tutor-enable-plugin-backup@v0.0.1
