@@ -23,7 +23,7 @@ runs:
 
     - name: fetch S3 secrets from Kubernetes secrets
       run: |-
-        kubectl get secret s3-openedx-storage -n ${{ inputs.namespace }}  -o json | jq  '.data | map_values(@base64d)' | jq -r 'keys[] as $k | "TUTOR_\($k|ascii_upcase)=\(.[$k])"' >> $GITHUB_ENV
+        kubectl get secret s3-openedx-storage -n ${{ inputs.namespace }}  -o json | jq  '.data | map_values(@base64d)' | jq -r 'keys[] as $k | "\($k|ascii_upcase)=\(.[$k])"' >> $GITHUB_ENV
       shell: bash
 
     # IMPORTANT: you must run tutor_build_hastexo_backup first.
