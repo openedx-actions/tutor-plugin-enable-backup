@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------
 # usage: Use tutor to enable the hastexo Backup & Restore plugin
 #------------------------------------------------------------------------------
-name: enable Backup plugin for tutor
+name: Open edX Tutor k8s enable Backup plugin
 description: Github Action to install and enable the Tutor plugin hastexo/tutor-contrib-backup
 branding:
   icon: 'cloud'
