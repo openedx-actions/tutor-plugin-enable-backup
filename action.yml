@@ -26,7 +26,11 @@ runs:
       continue-on-error: true
       run: |-
         ls /home/runner/work/openedx_devops/openedx_devops/ -lha
-        ls /home/runner/work/openedx_devops/openedx_devops/tutor -lha
+        ls /home/runner/work/openedx_devops/ -lha
+        ls /home/runner/work/ -lha
+        ls /home/runner/ -lha
+        ls /home/ -lha
+        ls / -lha
 
     # create a snapshot of the current state of tutor config.yml
     # and save it to a unqiue filename inside of tutor root.
