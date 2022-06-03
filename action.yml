@@ -21,10 +21,18 @@ runs:
     - name: Checkout
       uses: actions/checkout@v3.0.2
 
+    # create a snapshot of the current state of tutor config.yml
+    # and save it to a unqiue filename inside of tutor root.
+    - name: Backup tutor config.yml
+      shell: bash
+      run: |-
+        CONFIG_ORIG="config-$(echo $RANDOM | md5sum | head -c 5; echo;).yml"
+        cp $(tutor config printroot)/config.yml $(tutor config printroot)/${CONFIG_ORIG}
+
     - name: fetch S3 secrets from Kubernetes secrets
+      shell: bash
       run: |-
         kubectl get secret s3-openedx-storage -n ${{ inputs.namespace }}  -o json | jq  '.data | map_values(@base64d)' | jq -r 'keys[] as $k | "\($k|ascii_upcase)=\(.[$k])"' >> $GITHUB_ENV
-      shell: bash
 
     # IMPORTANT: you must run tutor_build_hastexo_backup first.
     #
@@ -32,13 +40,21 @@ runs:
     # options in the event that you are not also installing
     # hastexo/tutor-contrib-s3 (included above)
     - name: Enable the hastexo Backup & Restore plugin
+      shell: bash
       run: |-
         pip install git+https://github.com/hastexo/tutor-contrib-backup@v0.0.6
         tutor plugins enable backup
 
-        tutor config save --set BACKUP_DOCKER_IMAGE=${{ inputs.aws-ecr-uri }} \
+        tutor config save --set BACKUP_DOCKER_IMAGE="${{ inputs.aws-ecr-uri }}" \
                           --set BACKUP_K8S_CRONJOB_HISTORYLIMIT_FAILURE=1 \
                           --set BACKUP_K8S_CRONJOB_HISTORYLIMIT_SUCCESS=3 \
                           --set BACKUP_K8S_CRONJOB_BACKUP_SCHEDULE="0 0 * * *" \
                           --set BACKUP_S3_BUCKET_NAME="${S3_BACKUP_BUCKET}"
+
+    # combine the updated tutor config.yml with the contents of the backup
+    # as well as any other backups created by any other actions during execution
+    # of the caller workflow.
+    - name: Merge updated config.yml with backup
       shell: bash
+      run: |-
+        yq eval-all '. as $item ireduce ({}; . *+ $item )' config*.yml > $(tutor config printroot)/config.yml
