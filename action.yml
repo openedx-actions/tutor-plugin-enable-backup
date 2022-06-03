@@ -21,41 +21,19 @@ runs:
     - name: Checkout
       uses: actions/checkout@v3.0.2
 
-    - name: stat home and tutor folders
-      shell: bash
-      continue-on-error: true
-      run: |-
-        echo /home/runner/work/openedx_devops/openedx_devops/
-        ls /home/runner/work/openedx_devops/openedx_devops/ -lha
-
-        echo /home/runner/work/openedx_devops/
-        ls /home/runner/work/openedx_devops/ -lha
-
-        echo /home/runner/work/
-        ls /home/runner/work/ -lha
-
-        echo /home/runner/ -lha
-        ls /home/runner/ -lha
-
-        echo /home/
-        ls /home/ -lha
-
-        echo /
-        ls / -lha
-
-        echo /home/runner/.local/share/tutor -lha
-        ls /home/runner/.local/share/tutor -lha
-
-
-
     # create a snapshot of the current state of tutor config.yml
     # and save it to a unqiue filename inside of tutor root.
     - name: Backup tutor config.yml
       shell: bash
       continue-on-error: true
       run: |-
+        cat $(tutor config printroot)/config.yml
+
         CONFIG_ORIG="config-$(echo $RANDOM | md5sum | head -c 5; echo;).yml"
         cp $(tutor config printroot)/config.yml $(tutor config printroot)/${CONFIG_ORIG}
+
+        echo "ls $(tutor config printroot) -lha"
+        ls $(tutor config printroot) -lha
 
     - name: fetch S3 secrets from Kubernetes secrets
       shell: bash
@@ -82,8 +60,9 @@ runs:
     # combine the updated tutor config.yml with the contents of the backup
     # as well as any other backups created by any other actions during execution
     # of the caller workflow.
-    - name: Merge updated config.yml with backup
+    #yq eval-all '. as $item ireduce ({}; . *+ $item )' $(tutor config printroot)/config*.yml > $(tutor config printroot)/config.yml
+    - name: Compare updated config.yml to backup
       shell: bash
       continue-on-error: true
       run: |-
-        yq eval-all '. as $item ireduce ({}; . *+ $item )' $(tutor config printroot)/config*.yml > $(tutor config printroot)/config.yml
+        cat $(tutor config printroot)/config.yml
