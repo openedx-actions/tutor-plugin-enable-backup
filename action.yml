@@ -36,21 +36,21 @@ runs:
         ls $(tutor config printroot) -lha
 
     - name: fetch S3 secrets from Kubernetes secrets
-      shell: bash
-      run: |-
-        kubectl get secret s3-openedx-storage -n ${{ inputs.namespace }}  -o json | jq  '.data | map_values(@base64d)' | jq -r 'keys[] as $k | "\($k|ascii_upcase)=\(.[$k])"' >> $GITHUB_ENV
+      id: get-secret
+      uses: openedx-actions/tutor-k8s-get-secret@v0.0.2
+      with:
+        eks-namespace: ${{ inputs.namespace }}
+        eks-secret-name: s3-openedx-storage
 
-    # IMPORTANT: you must run tutor_build_hastexo_backup first.
-    #
-    # See the github README for additional AWS S3 configuration
-    # options in the event that you are not also installing
-    # hastexo/tutor-contrib-s3 (included above)
+    - name: install hastexo Backup & Restore plugin
+      id: install-plugin
+      shell: bash
+      run: pip install git+https://github.com/hastexo/tutor-contrib-backup@v0.0.6
+
     - name: Enable the hastexo Backup & Restore plugin
       shell: bash
       run: |-
-        pip install git+https://github.com/hastexo/tutor-contrib-backup@v0.0.6
         tutor plugins enable backup
-
         tutor config save --set BACKUP_DOCKER_IMAGE="${{ inputs.aws-ecr-uri }}" \
                           --set BACKUP_K8S_CRONJOB_HISTORYLIMIT_FAILURE=1 \
                           --set BACKUP_K8S_CRONJOB_HISTORYLIMIT_SUCCESS=3 \

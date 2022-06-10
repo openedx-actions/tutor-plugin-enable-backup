@@ -11,7 +11,7 @@
 
 Github Action to install and enable the Tutor plugin hastexo/tutor-contrib-backup
 
-
+IMPORTANT: you must run tutor_build_hastexo_backup first. See the github README for additional AWS S3 configuration options in the event that you are not also installing hastexo/tutor-contrib-s3
 
 ## Usage:
 
@@ -48,7 +48,7 @@ jobs:
 
       # This action.
       - name: Enable tutor plugin - Backup
-        uses: openedx-actions/tutor-enable-plugin-backup@v0.0.1
+        uses: openedx-actions/tutor-enable-plugin-backup@v0.0.9
         with:
           aws-ecr-uri: 123456789012.dkr.ecr.us-east-2.amazonaws.com/openedx_backup:latest
           namespace: openedx-prod
