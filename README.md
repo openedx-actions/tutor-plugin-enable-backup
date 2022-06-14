@@ -38,7 +38,7 @@ jobs:
 
       # install and configure tutor and kubectl
       - name: Configure Github workflow environment
-        uses: openedx-actions/tutor-k8s-init@v0.0.1
+        uses: openedx-actions/tutor-k8s-init@v0.0.13
 
       # Build the Backup container
       - name: Build the image and upload to AWS ECR
