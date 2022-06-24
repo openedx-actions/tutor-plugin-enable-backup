@@ -37,7 +37,7 @@ runs:
 
     - name: fetch S3 secrets from Kubernetes secrets
       id: get-secret
-      uses: openedx-actions/tutor-k8s-get-secret@v0.0.2
+      uses: openedx-actions/tutor-k8s-get-secret@v1.0.0
       with:
         eks-namespace: ${{ inputs.namespace }}
         eks-secret-name: s3-openedx-storage
